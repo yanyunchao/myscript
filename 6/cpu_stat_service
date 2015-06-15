@@ -79,7 +79,7 @@ fi
 #echo "$job"
 #echo "$job_clear"
 
-	echo $row $row_clear
+#echo $row $row_clear
 case $1 in  
 start)  
 	start
