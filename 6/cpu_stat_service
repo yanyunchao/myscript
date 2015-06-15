@@ -1,0 +1,98 @@
+#!/bin/bash
+#chkconfig: 2345 20 81   
+#description: cpu statistic service   
+
+start(){
+    echo "cpu statistic service startup"
+
+	if [[ $cron_list_null == 0 ]];then
+		local row_str=`crontab -l | sed -n ${row}p`
+		local row_str_clear=`crontab -l | sed -n ${row_clear}p`
+	
+		for((i=0; i<${#row_str}; i++))
+		do
+			if [[ "${row_str:$i:1}" != "#" ]] && [[ "${row_str:$i:1}" != " " ]];then
+				crontab -l | sed ${row}d | sed  "$[$row-1] a${row_str:$i}" > $HOME/.service_crontab_add.txt
+				crontab $HOME/.service_crontab_add.txt
+				break
+			fi
+		done
+	
+		for((i=0; i<${#row_str_clear}; i++))
+		do
+			if [[ "${row_str_clear:$i:1}" != "#" ]] && [[ "${row_str_clear:$i:1}" != " " ]];then
+				crontab -l | sed ${row_clear}d | sed  "$[$row_clear-1] a${row_str_clear:$i}" > $HOME/.service_crontab_add.txt
+				crontab $HOME/.service_crontab_add.txt
+				break
+			fi
+		done
+	else
+		printf "${commond}\n${commond_clear}\n" > $HOME/.service_crontab_add.txt
+		crontab $HOME/.service_crontab_add.txt
+	fi
+	return 0
+}
+
+stop(){
+	echo "cpu statistic service stop"
+
+	local row_str=`crontab -l | sed -n ${row}p | sed 's/ //g'`
+
+	if [[ ${row_str:0:1} != "#" ]];then
+		crontab -l | sed  "${row}s/^/#/" > $HOME/.service_crontab_add.txt
+		crontab $HOME/.service_crontab_add.txt
+	fi
+
+	local row_str_clear=`crontab -l | sed -n ${row_clear}p | sed 's/ //g'`
+
+	if [[ ${row_str_clear:0:1} != "#" ]];then
+		crontab -l | sed  "${row_clear}s/^/#/" > $HOME/.service_crontab_add.txt
+		crontab $HOME/.service_crontab_add.txt
+	fi
+
+	return 0
+}
+
+restart(){
+	stop
+	start
+}
+
+commond="*/1 * * * * bash /export/pfs/home/lte_soc/yanyunchao/1234/perl/cpu_stat.sh"
+commond_clear="* */1 * * * bash /export/pfs/home/lte_soc/yanyunchao/1234/perl/cpu_stat.sh clear"
+
+#job_count=$(crontab -l | grep -c "^$(echo "$commond" | sed 's/*/\\*/g')$")
+#job_clear_count=$(crontab -l | grep -c "^$(echo "$commond_clear" | sed 's/*/\\*/g')$")
+
+
+job=`echo "$commond" | awk '{print $6,$7}'` 
+job_clear=`echo "$commond_clear" | awk '{print $6,$7,$8}'` 
+
+if [[ -z  "`crontab -l`" ]];then
+	cron_list_null=1
+else
+	cron_list_null=0
+
+	row=`crontab -l | grep -n "$job$" | awk -F: '{print $1}'`
+	row_clear=`crontab -l | grep -n "$job_clear$" | awk -F: '{print $1}'`
+fi
+echo "$job"
+echo "$job_clear"
+
+	echo $row $row_clear
+case $1 in  
+start)  
+	start
+    ;;  
+stop)  
+	stop
+    ;;  
+restart)  
+	restart
+	;;  
+*)  
+	echo $"Usage: $0 {start|stop|restart}"
+    ;;  
+esac
+
+exit 0

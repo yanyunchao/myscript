@@ -1,0 +1,6 @@
+eth0:NULL
+eth1:NULL
+eth2:NULL
+eth3:192.168.222.22
+lo:127.0.0.1
+virbr0:192.168.122.1

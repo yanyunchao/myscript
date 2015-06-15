@@ -1,0 +1,1 @@
+密码可存储在/root 目录下，如/root/.mypasswd，需要时读取即可

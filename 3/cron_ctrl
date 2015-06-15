@@ -1,0 +1,67 @@
+#!/bin/bash
+
+# parameter check
+if [ $# -lt 2 ];then
+	echo "USAGE:`basename $0` jobname --start/--stop/--list"
+	exit 1
+fi
+
+crontab  -l > .crontab_ctrl_tmp.txt
+param=$@
+
+for para_i in $param
+do
+	if [[ "$para_i" == "$1" ]];then
+
+		count=`grep -c "$para_i" .crontab_ctrl_tmp.txt`
+
+		if [[ $count == 0 ]];then
+			echo "con't find job name:$para_i"
+			exit 1
+		elif [[ $count > 1 ]];then
+			echo "please input a job name in the list:"
+			cat .crontab_ctrl_tmp.txt
+			exit 1
+		else
+			row=`grep -n $1 .crontab_ctrl_tmp.txt | awk -F: '{print $1}'`
+		fi
+
+	else
+
+		if [[ $count == 1 ]];then
+
+			row_str=`sed -n ${row}p .crontab_ctrl_tmp.txt`
+
+			case "$para_i" in
+			--stop)
+				cheak_str1=`echo $row_str |sed 's/ //g'`
+				if [[ ${cheak_str1:0:1} != "#" ]];then
+					sed -i "${row}s/^/#/" .crontab_ctrl_tmp.txt
+					crontab ./.crontab_ctrl_tmp.txt
+				fi
+				;;
+			--start)
+				for((i=0; i<${#row_str}; i++))
+				do
+					if [[ "${row_str:$i:1}" != "#" ]] && [[ "${row_str:$i:1}" != " " ]];then
+						sed -i ${row}d .crontab_ctrl_tmp.txt
+						sed -i "$[$row-1] a${row_str:$i}" .crontab_ctrl_tmp.txt
+						#sed -i "${row}s/^.*$/${row_str:$i}/" .crontab_ctrl_tmp.txt  
+						crontab ./.crontab_ctrl_tmp.txt
+						break
+					fi
+				done
+				;;
+			--list)
+				echo "$row_str"
+				;;
+			*)
+				echo "invalid parameter:$para_i"
+				echo "USAGE:`basename $0` jobname --start/--stop/--list"
+				exit 1		
+				;;
+			esac
+		fi
+	
+	fi
+done
