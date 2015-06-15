@@ -76,8 +76,8 @@ else
 	row=`crontab -l | grep -n "$job$" | awk -F: '{print $1}'`
 	row_clear=`crontab -l | grep -n "$job_clear$" | awk -F: '{print $1}'`
 fi
-echo "$job"
-echo "$job_clear"
+#echo "$job"
+#echo "$job_clear"
 
 	echo $row $row_clear
 case $1 in  
