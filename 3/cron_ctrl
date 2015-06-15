@@ -13,7 +13,7 @@ for para_i in $param
 do
 	if [[ "$para_i" == "$1" ]];then
 
-		count=`grep -c "$para_i" .crontab_ctrl_tmp.txt`
+		count=`grep -c "$para_i$" .crontab_ctrl_tmp.txt`
 
 		if [[ $count == 0 ]];then
 			echo "con't find job name:$para_i"
